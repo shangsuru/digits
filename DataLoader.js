@@ -1,6 +1,6 @@
 const IMAGE_HEIGHT = 28;
 const IMAGE_WIDTH = 28;
-const IMAGE_SIZE = 28;
+const IMAGE_SIZE = IMAGE_HEIGHT * IMAGE_WIDTH;
 
 const DATA_SIZE = 65000;
 const TRAIN_SIZE = 55000;
@@ -49,14 +49,16 @@ export class DataLoader {
             };
             image.src = MNIST_IMAGES_PATH;
         });
+
         const labelsRequest = fetch(MNIST_LABELS_PATH);
-        const [images, labels] = await Promise.all([imageRequest, labelsRequest]);
-        this.dataSetLabels = new Uint8Array(await labels.arrayBuffer());
+        const [imageResponse, labelsResponse] = await Promise.all([imageRequest, labelsRequest]);
+
+        this.dataSetLabels = new Uint8Array(await labelsResponse.arrayBuffer());
 
         this.trainImages = this.datasetImages.slice(0, IMAGE_SIZE * TRAIN_SIZE);
         this.trainLabels = this.dataSetLabels.slice(0, NUM_CLASSES * TRAIN_SIZE);
-        this.testImages = this.datasetImages.slice(IMAGE_SIZE * TRAIN_SIZE);
-        this.testLabels = this.dataSetLabels.slice(NUM_CLASSES * TRAIN_SIZE);
+        this.testImages = this.datasetImages.slice(IMAGE_SIZE * TRAIN_SIZE, IMAGE_SIZE * (TRAIN_SIZE + TEST_SIZE));
+        this.testLabels = this.dataSetLabels.slice(NUM_CLASSES * TRAIN_SIZE, NUM_CLASSES * (TRAIN_SIZE + TEST_SIZE));
     }
 
     getTrainingData() {
@@ -66,9 +68,14 @@ export class DataLoader {
         return [x, y];
     }
 
-    getTestData() {
+    getTestData(numExamples) {
         let x = tf.tensor4d(this.testImages, [this.testImages.length / IMAGE_SIZE, IMAGE_HEIGHT, IMAGE_WIDTH, 1]);
         let y = tf.tensor2d(this.testLabels, [this.testLabels.length / NUM_CLASSES, NUM_CLASSES]);
+
+        /*if (numExamples) {
+            x = x.slice([0, 0, 0, 0], [numExamples, IMAGE_HEIGHT, IMAGE_WIDTH, 1]);
+            y = y.slice([0, 0], [numExamples, NUM_CLASSES]);
+        }*/
 
         return [x, y];
     }

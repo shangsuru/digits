@@ -5,5 +5,11 @@
 }
 
 .visor-controls {
-    display: none;
+    display: none !important;
+}
+
+.examples {
+    margin: 10px;
+    width: 80px;
+    height: 80px;
 }
