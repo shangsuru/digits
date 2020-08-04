@@ -7,7 +7,7 @@ async function main() {
 }
 
 async function showExamples() {
-    tfvis.visor().surface({ name: "My Surface", tab: "My Tab" });
+    tfvis.visor().surface({ name: "Examples", tab: "Dataset" });
 }
 
 main();
