@@ -17,6 +17,8 @@ async function main() {
     const model = createModel();
     tfvis.show.modelSummary({ name: "Architecture", tab: "Model" }, model);
     await trainModel(model, trainImages, trainLabels, validationImages, validationLabels, BATCH_SIZE, EPOCHS);
+
+    await evaluateModel(model, testImages, testLabels);
 }
 
 async function showExamples(examples, numExamples) {
@@ -58,7 +60,7 @@ function createModel() {
 }
 
 function trainModel(model, trainX, trainY, valX, valY, batchSize, epochs) {
-    model.fit(trainX, trainY, {
+    return model.fit(trainX, trainY, {
         batchSize,
         epochs,
         shuffle: true,
@@ -70,6 +72,28 @@ function trainModel(model, trainX, trainY, valX, valY, batchSize, epochs) {
             "val_acc",
         ]),
     });
+}
+
+async function evaluateModel(model, testImages, testLabels) {
+    const classNames = ["Zero", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"];
+    // Do Predictions
+    const labels = testLabels.argMax(1);
+    const predictions = model.predict(testImages).argMax(1);
+
+    // Show accuracy
+    const accuracy = Math.round((await tfvis.metrics.accuracy(labels, predictions)) * 1000) / 1000;
+    tfvis.render.table({ name: "Total Accuracy", tab: "Evaluation" }, { headers: [accuracy], values: [" "] });
+
+    // Show per class accuracy
+    const classAccuracy = await tfvis.metrics.perClassAccuracy(labels, predictions);
+    tfvis.show.perClassAccuracy({ name: "Class Accuracy", tab: "Evaluation" }, classAccuracy, classNames);
+
+    // Show confusion matrix
+    const confusionMatrix = await tfvis.metrics.confusionMatrix(labels, predictions);
+    tfvis.render.confusionMatrix(
+        { name: "Confusion Matrix", tab: "Evaluation" },
+        { values: confusionMatrix, tickLabels: classNames }
+    );
 }
 
 main();
