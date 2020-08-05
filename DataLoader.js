@@ -1,17 +1,22 @@
 const IMAGE_HEIGHT = 28;
 const IMAGE_WIDTH = 28;
 const IMAGE_SIZE = IMAGE_HEIGHT * IMAGE_WIDTH;
-
 const DATA_SIZE = 65000;
-const TRAIN_SIZE = 55000;
-const TEST_SIZE = 10000;
-
 const NUM_CLASSES = 10;
-
 const MNIST_IMAGES_PATH = "https://storage.googleapis.com/learnjs-data/model-builder/mnist_images.png";
 const MNIST_LABELS_PATH = "https://storage.googleapis.com/learnjs-data/model-builder/mnist_labels_uint8";
 
 export class DataLoader {
+    constructor(trainSize, validationSize, testSize) {
+        if (trainSize + validationSize + testSize < DATA_SIZE) {
+            (this.trainSize = trainSize), (this.validationSize = validationSize), (this.testSize = testSize);
+        } else {
+            this.trainSize = 45000;
+            this.validationSize = 10000;
+            this.testSize = 10000;
+        }
+    }
+
     async load() {
         // Make request for the MNIST image set
         const image = new Image();
@@ -55,28 +60,42 @@ export class DataLoader {
 
         this.dataSetLabels = new Uint8Array(await labelsResponse.arrayBuffer());
 
-        this.trainImages = this.datasetImages.slice(0, IMAGE_SIZE * TRAIN_SIZE);
-        this.trainLabels = this.dataSetLabels.slice(0, NUM_CLASSES * TRAIN_SIZE);
-        this.testImages = this.datasetImages.slice(IMAGE_SIZE * TRAIN_SIZE, IMAGE_SIZE * (TRAIN_SIZE + TEST_SIZE));
-        this.testLabels = this.dataSetLabels.slice(NUM_CLASSES * TRAIN_SIZE, NUM_CLASSES * (TRAIN_SIZE + TEST_SIZE));
+        this.trainImages = this.datasetImages.slice(0, IMAGE_SIZE * this.trainSize);
+        this.trainLabels = this.dataSetLabels.slice(0, NUM_CLASSES * this.trainSize);
+        this.validationImages = this.datasetImages.slice(
+            0,
+            IMAGE_SIZE * this.trainSize,
+            IMAGE_SIZE * (this.trainSize + this.validationSize)
+        );
+        this.validationLabels = this.dataSetLabels.slice(
+            NUM_CLASSES * this.trainSize,
+            NUM_CLASSES * (this.trainSize + this.validationSize)
+        );
+        this.testImages = this.datasetImages.slice(
+            IMAGE_SIZE * (this.trainSize + this.validationSize),
+            IMAGE_SIZE * (this.trainSize + this.validationSize + this.testSize)
+        );
+        this.testLabels = this.dataSetLabels.slice(
+            NUM_CLASSES * (this.trainSize + this.validationSize),
+            NUM_CLASSES * (this.trainSize + this.validationSize + this.testSize)
+        );
     }
 
     getTrainingData() {
         let x = tf.tensor4d(this.trainImages, [this.trainImages.length / IMAGE_SIZE, IMAGE_HEIGHT, IMAGE_WIDTH, 1]);
         let y = tf.tensor2d(this.trainLabels, [this.trainLabels.length / NUM_CLASSES, NUM_CLASSES]);
-
         return [x, y];
     }
 
-    getTestData(numExamples) {
+    getValidationData() {
+        let x = tf.tensor4d(this.validationImages, [this.validationImages.length / IMAGE_SIZE, IMAGE_HEIGHT, IMAGE_WIDTH, 1]);
+        let y = tf.tensor2d(this.trainLabels, [this.trainLabels.length / NUM_CLASSES, NUM_CLASSES]);
+        return [x, y];
+    }
+
+    getTestData() {
         let x = tf.tensor4d(this.testImages, [this.testImages.length / IMAGE_SIZE, IMAGE_HEIGHT, IMAGE_WIDTH, 1]);
         let y = tf.tensor2d(this.testLabels, [this.testLabels.length / NUM_CLASSES, NUM_CLASSES]);
-
-        /*if (numExamples) {
-            x = x.slice([0, 0, 0, 0], [numExamples, IMAGE_HEIGHT, IMAGE_WIDTH, 1]);
-            y = y.slice([0, 0], [numExamples, NUM_CLASSES]);
-        }*/
-
         return [x, y];
     }
 }
