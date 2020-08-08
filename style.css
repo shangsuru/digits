@@ -17,3 +17,17 @@
 #draw-canvas {
     border: 1px solid black;
 }
+
+#prediction-graph {
+    margin-top: 80px;
+}
+
+#prediction {
+    font-size: 9em;
+    float: right;
+    border: 1px solid black;
+    width: 140px;
+    height: 140px;
+    text-align: center;
+    margin-right: 20%;
+}
