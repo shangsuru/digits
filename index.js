@@ -1,9 +1,10 @@
 import { DataLoader } from "./DataLoader.js";
+import { initCanvas } from "./draw.js";
 
 async function main() {
-    const TRAIN_SIZE = 5000;
-    const VALIDATION_SIZE = 1000;
-    const TEST_SIZE = 1000;
+    /*const TRAIN_SIZE = 50;
+    const VALIDATION_SIZE = 10;
+    const TEST_SIZE = 10;
     const BATCH_SIZE = 512;
     const EPOCHS = 10;
 
@@ -13,12 +14,21 @@ async function main() {
     const [trainImages, trainLabels] = data.getTrainingData();
     const [validationImages, validationLabels] = data.getValidationData();
 
-    await showExamples(testImages, 40);
+    await showExamples(testImages, 4);
     const model = createModel();
     tfvis.show.modelSummary({ name: "Architecture", tab: "Model" }, model);
     await trainModel(model, trainImages, trainLabels, validationImages, validationLabels, BATCH_SIZE, EPOCHS);
 
-    await evaluateModel(model, testImages, testLabels);
+    await evaluateModel(model, testImages, testLabels);*/
+
+    tfvis.visor().surface({ name: "Draw a number", tab: "Testing" });
+    const drawDiv = document.querySelectorAll(".tf-surface:last-child")[0];
+
+    // Create canvas for drawing the number
+    let canvas = document.createElement("canvas");
+    canvas.id = "draw-canvas";
+    initCanvas(canvas);
+    drawDiv.appendChild(canvas);
 }
 
 async function showExamples(examples, numExamples) {

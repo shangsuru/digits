@@ -13,3 +13,7 @@
     width: 80px;
     height: 80px;
 }
+
+#draw-canvas {
+    border: 1px solid black;
+}
